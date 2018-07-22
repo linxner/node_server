@@ -1,0 +1,21 @@
+{
+  "name": "website demo",
+  "description": "jade+express+mongoDB",
+  "main": "app.js",
+  "authors": [
+    "linxner <342709615@qq.com>"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/linxner/node",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/libs",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^4.1.2"
+  }
+}
