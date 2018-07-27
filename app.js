@@ -4,13 +4,21 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const port = process.env.PORT || 3000
 const Movie = require('./modules/movie')
+const User = require('./modules/user')
 const _ = require('underscore')
+const cookieParser = require('cookie-parser')
+const session=require('express-session')
+
 
 mongoose.connect('mongodb://localhost/website')
 const app = express()
 
 app.set('views', './views/includes')
 app.use(bodyParser());
+app.use(cookieParser())
+app.use(session({
+    secret: 'linxne'
+}))
 app.locals.moment = require('moment')
 // app.use(bodyParser.urlencoded({
 //     extended: false
@@ -20,7 +28,8 @@ app.set('view engine', 'jade')
 app.listen(port)
 
 app.get('/', function (req, res) {
-
+    console.log(('user in session'))
+    console.log(req.session.user)
     Movie.fetch(function (err, movies) {
         if (err) {
             console.log(err)
@@ -58,7 +67,62 @@ app.get('/', function (req, res) {
         // }]
     })
 })
+//signup
+app.post('/user/signup', function (req, res) {
+    var _user = req.body.user
+    console.log(_user)
+    // console.log(User)
+    User.find({
+        name: _user.name
+    }, function (user) {
+        if (user) {
+            // console.log('user')
+            return res.redirect('/')
+        } else {
+            // console.log('no user')
+            var user = new User(_user)
 
+            return user.save(function (err, user) {
+                if (err) {
+                    console.log(err)
+                }
+                res.redirect('/admin/userlist')
+            })
+        }
+    })
+})
+
+
+//signin
+app.post('/user/signin', function (req, res) {
+    var _user = req.body.user
+    var name = _user.name
+    var password = _user.password
+    User.findOne({
+        name: name
+    }, function (err, user) {
+        if (err) {
+            console.log(err)
+        }
+        if (!user) {
+            return res.redirect('/')
+
+        }
+        user.comparePassword(password, function (err, isMatch) {
+            if (err) {
+                console.log(err)
+            }
+            if (isMatch) {
+                // console.log('Password is matched')
+                req.session.user = user
+
+                return res.redirect('/')
+            } else {
+                console.log('Password is not matched')
+            }
+        })
+    })
+})
 
 app.get('/movie/:id', function (req, res) {
     const id = req.params.id
